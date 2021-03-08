@@ -1,0 +1,10 @@
+.DS_STORE
+Thumbs.db
+node_modules
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+/dist
+/build
+/.nyc_output
+/coverage

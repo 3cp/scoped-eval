@@ -1,0 +1,61 @@
+{
+  "name": "scoped-eval",
+  "version": "0.0.1",
+  "description": "Safely eval a JavaScript expression within a scope",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "scripts": {
+    "test": "nyc ava",
+    "lint": "eslint src test",
+    "preversion": "npm test",
+    "version": "standard-changelog && git add CHANGELOG.md",
+    "postversion": "git push && git push --tags && npm publish",
+    "pretest": "npm run lint",
+    "build": "ncc build src/index.ts -m -e meriyah -e eslint-scope",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/3cp/scoped-eval.git"
+  },
+  "keywords": [
+    "eval",
+    "expression",
+    "binding"
+  ],
+  "author": "Chunpeng Huo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/makesjs/makes/issues"
+  },
+  "homepage": "https://github.com/makesjs/makes#readme",
+  "devDependencies": {
+    "@types/eslint-scope": "^3.7.0",
+    "@typescript-eslint/eslint-plugin": "^4.15.2",
+    "@typescript-eslint/parser": "^4.15.2",
+    "@vercel/ncc": "^0.27.0",
+    "ava": "^3.15.0",
+    "eslint": "^7.21.0",
+    "nyc": "^15.1.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.2"
+  },
+  "ava": {
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  },
+  "dependencies": {
+    "eslint-scope": "^5.1.1",
+    "meriyah": "^4.1.4",
+    "modify-code": "^1.2.0"
+  }
+}
