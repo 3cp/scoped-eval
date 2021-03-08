@@ -51,11 +51,19 @@ export class ScopedEval {
     }
   }
 
-  build(code: string) {
+  build(code: string): (scope: any) => any {
     if (typeof this.cache[code] === 'function') {
       return this.cache[code];
     }
 
+    const [inputVariable, body] = this.preprocess(code);
+
+    const func = new Function(inputVariable, body) as (scope: any) => any;
+    this.cache[code] = func;
+    return func;
+  }
+
+  preprocess(code: string): [string, string] {
     const ast = parse(code);
     const globals = getGlobals(ast, this.allowedGlobals);
     console.log('globals', globals);
@@ -73,15 +81,13 @@ export class ScopedEval {
       }
     }
 
-    // TODO rewrite globals to scope.get('name')
-    // TODO rewrite assignment to scope.set('name', value)
+    // TODO rewrite foo to scope.get('foo')
+    // TODO rewrite foo += value to scope.set('foo', value, '+=')
+    // TODO rewrite $parent.$parent.foo.bar to scope.get('$parent').get('$parent').get('foo').bar
 
-    const result = m.transform();
-    console.log(result);
     // TODO support result.map for debugging
-    const func = new Function(scopeVariable, result.code) as (scope: any) => any;
-    this.cache[code] = func;
-    return func;
+    const result = m.transform();
+    return [scopeVariable, result.code];
   }
 }
 
