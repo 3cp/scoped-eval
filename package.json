@@ -17,7 +17,7 @@
     "postversion": "git push && git push --tags && npm publish",
     "pretest": "npm run lint",
     "build": "ncc build src/index.ts -m -e meriyah -e eslint-scope",
-    "prepublishOnly": "npm run build"
+    "prepack": "npm run build"
   },
   "repository": {
     "type": "git",
