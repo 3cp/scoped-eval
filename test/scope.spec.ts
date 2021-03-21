@@ -125,7 +125,7 @@ test('Scope can do CoalesceAssign', t => {
 
   const object2 = {a: null};
   const s2 = new Scope(object2);
-  const r = s2.set('a', true, AssignmentOperator.CoalesceAssign);
+  s2.set('a', true, AssignmentOperator.CoalesceAssign);
   t.is(object2.a, true);
 });
 

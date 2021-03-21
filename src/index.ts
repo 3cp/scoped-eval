@@ -45,7 +45,7 @@ export class ScopedEval {
 
   allowGlobals(globals: string[]) {
     if (globals) {
-      for (let n of globals) {
+      for (const n of globals) {
         this.allowedGlobals[n] = true;
       }
     }
