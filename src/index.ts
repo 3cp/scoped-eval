@@ -102,6 +102,8 @@ export default class ScopedEval {
           const found = ranges.findIndex(r => r.start === start && r.end === end);
           // Still not a global var
           if (found === -1) return;
+
+          // TODO add an option to reject assignment.
           // Remove from the global list
           ranges.splice(found, 1);
 
