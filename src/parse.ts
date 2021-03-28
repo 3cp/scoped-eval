@@ -1,4 +1,5 @@
-import {parseScript, Options, ESTree} from 'meriyah';
+import {parseScript, Options} from 'meriyah';
+import * as ESTree from 'estree';
 
 const paserOptions: Options = {
   next: true,
@@ -9,5 +10,5 @@ const paserOptions: Options = {
 };
 
 export default function (code: string): ESTree.Program {
-  return parseScript(code, paserOptions);
+  return parseScript(code, paserOptions) as ESTree.Program;
 }

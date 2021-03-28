@@ -1,7 +1,7 @@
-import {analyze} from 'eslint-scope';
-import {ESTree} from 'meriyah';
+import {analyze, Reference} from 'eslint-scope';
+import * as ESTree from 'estree';
 
-export default function (ast: ESTree.Program, allowedGlobals: {[key: string]: boolean}): {[key: string]: {start: number, end: number}[]} {
+export default function (ast: ESTree.Node, allowedGlobals: {[key: string]: boolean}): {[key: string]: [number, number][]} {
   const scopeManager = analyze(ast, {ecmaVersion: 6});
   const globalScope = scopeManager.acquire(ast);
 
@@ -9,17 +9,17 @@ export default function (ast: ESTree.Program, allowedGlobals: {[key: string]: bo
   // like __defineSetter__, which makes globals['__defineSetter__'] not empty.
   const globals = Object.create(null);
 
-  globalScope.through.forEach(function (ref) {
+  globalScope.through.forEach(function (ref: Reference) {
     const name = ref.identifier.name;
     if (allowedGlobals[name] === true) return;
 
-    const start = ref.identifier['start'] as number;
-    const end = ref.identifier['end'] as number;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const range = ref.identifier.range!;
 
     if (globals[name]) {
-      globals[name].push({start, end});
+      globals[name].push(range);
     } else {
-      globals[name] = [{start, end}];
+      globals[name] = [range];
     }
   });
 

@@ -1,29 +1,26 @@
 import test from 'ava';
+import parse from '../src/parse';
 import unusedName from '../src/unused-name';
 
 test('unusedName returns first unused name', t => {
-  t.is(unusedName({}), 'a');
-  t.is(unusedName({a:1, b:1, d:1}), 'c');
+  t.is(unusedName(parse('foo')), 'a');
+  t.is(unusedName(parse('let a = b + 1; d + a')), 'c');
 
-  const used = {};
+  let code = '';
   for (let n = 97; n <= 122; n++) {
     // a to z
-    used[String.fromCharCode(n)] = 1
-    // aa to az
-    used['a' + String.fromCharCode(n)] = 1
+    code += String.fromCharCode(n) + ';';
   }
-  t.is(unusedName(used), 'ba');
+  t.is(unusedName(parse(code)), '$');
+  t.is(unusedName(parse(code + '$;')), '_');
 });
 
-test('unusedName gave up if user exausted a to z and aa to zz', t => {
-  const used = {};
+test('unusedName gave up if user exausted a to z, $ and _', t => {
+  let code = '';
   for (let n = 97; n <= 122; n++) {
     // a to z
-    used[String.fromCharCode(n)] = 1
-    for (let n1 = 97; n1 <= 122; n1++) {
-      // aa to zz
-      used[String.fromCharCode(n) + String.fromCharCode(n1)] = 1
-    }
+    code += String.fromCharCode(n) + ';';
   }
-  t.throws(() => unusedName(used), {message: /^I gave up/});
+  code += '$;_;';
+  t.throws(() => unusedName(parse(code)), {message: /^I gave up/});
 });

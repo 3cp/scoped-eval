@@ -1,4 +1,5 @@
 import modify from 'modify-code';
+import * as ESTree from 'estree';
 import { traverse } from 'estraverse';
 import unusedName from './unused-name';
 import parse from './parse';
@@ -26,7 +27,7 @@ const DEFAULT_ALLOWED_GLOBALS = {
   'Object': true,
   'RegExp': true,
   'Set': true,
-  'Selection': true,
+  // 'Selection': true,
   // 'TextDecoder': true,
   // 'TextEncoder': true,
   // 'document': true,
@@ -73,7 +74,7 @@ export default class ScopedEval {
     const globals = getGlobals(ast, this.allowedGlobals);
     // console.log('globals', globals);
     // console.log('ast', JSON.stringify(ast, null, 2));
-    const scopeVariable = unusedName(globals);
+    const scopeVariable = unusedName(ast);
 
     const m = modify(code);
 
@@ -87,19 +88,20 @@ export default class ScopedEval {
     }
 
     // Rewrite foo += value to scope.set('foo', value, '+=')
-    traverse(ast, {
-      enter: function(node, parent) {
+    traverse(ast as ESTree.Node, {
+      enter: function(node: ESTree.Node, parent: ESTree.Node) {
         if (
           parent &&
           parent.type === 'AssignmentExpression' &&
           parent.left === node &&
           node.type === 'Identifier'
         ) {
-          const {name, start, end} = node;
+          const {name} = node;
+          const [start, end] = node.range;
           const ranges = globals[name];
           // Not a global var
           if (!ranges) return;
-          const found = ranges.findIndex(r => r.start === start && r.end === end);
+          const found = ranges.findIndex(r => r[0] === start && r[1] === end);
           // Still not a global var
           if (found === -1) return;
 
@@ -108,8 +110,8 @@ export default class ScopedEval {
           ranges.splice(found, 1);
 
           const {right, operator} = parent;
-          m.replace(start, right.start, `${scopeVariable}.set('${name}', `);
-          m.insert(right.end, `, '${operator}')`);
+          m.replace(start, right.range[0], `${scopeVariable}.set('${name}', `);
+          m.insert(right.range[1], `, '${operator}')`);
         }
       }
     });
@@ -118,7 +120,7 @@ export default class ScopedEval {
 
     // Replace foo with scope.get('foo')
     for (const name in globals) {
-      for (const {start, end} of globals[name]) {
+      for (const [start, end] of globals[name]) {
         m.replace(start, end, `${scopeVariable}.get('${name}')`);
       }
     }

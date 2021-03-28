@@ -36,6 +36,7 @@
   "homepage": "https://github.com/makesjs/makes#readme",
   "devDependencies": {
     "@types/eslint-scope": "^3.7.0",
+    "@types/estraverse": "^5.1.0",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
     "@vercel/ncc": "^0.27.0",

@@ -39,5 +39,5 @@ test('ScopeEval preprocesses expression with local assignment', t => {
   const se = new ScopedEval();
   const [scopeVariable, code] = se.preprocess('let a = b + 1; return c + a;');
   t.is(scopeVariable, 'd');
-  t.is(code, "let a = d.get('b' + 1; return d.get('c') + a;");
+  t.is(code, "let a = d.get('b') + 1; return d.get('c') + a;");
 });
