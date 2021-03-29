@@ -27,6 +27,7 @@ const DEFAULT_ALLOWED_GLOBALS = {
   'Object': true,
   'RegExp': true,
   'Set': true,
+  'fetch': true
   // 'Selection': true,
   // 'TextDecoder': true,
   // 'TextEncoder': true,
@@ -90,6 +91,9 @@ export default class ScopedEval {
     // Rewrite foo += value to scope.set('foo', value, '+=')
     traverse(ast as ESTree.Node, {
       enter: function(node: ESTree.Node, parent: ESTree.Node) {
+        if (node.type === 'ImportExpression') {
+          throw new Error('Dynamic import is not allowed');
+        }
         if (
           parent &&
           parent.type === 'AssignmentExpression' &&

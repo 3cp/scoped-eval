@@ -41,3 +41,15 @@ test('ScopeEval preprocesses expression with local assignment', t => {
   t.is(scopeVariable, 'd');
   t.is(code, "let a = d.get('b') + 1; return d.get('c') + a;");
 });
+
+test('ScopeEval preprocesses expression with complex assignment', t => {
+  const se = new ScopedEval();
+  const [scopeVariable, code] = se.preprocess('a >>= a | b');
+  t.is(scopeVariable, 'c');
+  t.is(code, "return c.set('a', c.get('a') | c.get('b'), '>>=')");
+});
+
+test('ScopeEval rejects dynamic import()', t => {
+  const se = new ScopedEval();
+  t.throws(() => se.preprocess('import("a")'), {message: 'Dynamic import is not allowed'});
+})
