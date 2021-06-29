@@ -1,112 +1,54 @@
-const hasOwnProperty = Object.prototype.hasOwnProperty;
+const PARENT = "$parent";
+const PARENTS = "$parents";
+const THIS = "$this";
 
-export enum AssignmentOperator {
-  Assign                  = '=',
-  ShiftLeftAssign         = '<<=',
-  ShiftRightAssign        = '>>=',
-  LogicalShiftRightAssign = '>>>=',
-  ExponentiateAssign      = '**=',
-  AddAssign               = '+=',
-  SubtractAssign          = '-=',
-  MultiplyAssign          = '*=',
-  DivideAssign            = '/=',
-  ModuloAssign            = '%=',
-  BitwiseXorAssign        = '^=',
-  BitwiseOrAssign         = '|=',
-  BitwiseAndAssign        = '&=',
-  LogicalOrAssign         = '||=',
-  LogicalAndAssign        = '&&=',
-  CoalesceAssign          = '??='
-}
-
-function assign(object: any, key: string, value: any, operator: AssignmentOperator) {
-  switch (operator) {
-    case AssignmentOperator.Assign:
-      return object[key] = value;
-    case AssignmentOperator.ShiftLeftAssign:
-      return object[key] <<= value;
-    case AssignmentOperator.ShiftRightAssign:
-      return object[key] >>= value;
-    case AssignmentOperator.LogicalShiftRightAssign:
-      return object[key] >>>= value;
-    case AssignmentOperator.ExponentiateAssign:
-      return object[key] **= value;
-    case AssignmentOperator.AddAssign:
-      return object[key] += value;
-    case AssignmentOperator.SubtractAssign:
-      return object[key] -= value;
-    case AssignmentOperator.MultiplyAssign:
-      return object[key] *= value;
-    case AssignmentOperator.DivideAssign:
-      return object[key] /= value;
-    case AssignmentOperator.ModuloAssign:
-      return object[key] %= value;
-    case AssignmentOperator.BitwiseXorAssign:
-      return object[key] ^= value;
-    case AssignmentOperator.BitwiseOrAssign:
-      return object[key] |= value;
-    case AssignmentOperator.BitwiseAndAssign:
-      return object[key] &= value;
-    case AssignmentOperator.LogicalOrAssign:
-      return object[key] || (object[key] = value);
-    case AssignmentOperator.LogicalAndAssign:
-      return object[key] && (object[key] = value);
-    case AssignmentOperator.CoalesceAssign:
-      return object[key] ?? (object[key] = value);
-  }
-}
-
-export default class Scope {
-  constructor(
-    private $this: any,
-    private $parent?: Scope,
-    private $context?: {[key: string]: any}) {}
-
-  get(name: string): any {
-    if (name === '$this' || name === '$parent' || name === '$context') {
-      return this[name];
-    }
-
-    // Check contextual variables including $this and $parent
-    if (this.$context && hasOwnProperty.call(this.$context, name)) {
-      return this.$context[name];
-    }
-    // Check current binding context
-    const type = typeof this.$this;
-    if (type === 'function' || (type === 'object' && this.$this !== null)) {
-      if (name in this.$this) {
-        return this.$this[name];
+function handler(context: { [key: string]: any }, parent: any): ProxyHandler<any> {
+  return {
+    get(target: any, key: string) {
+      if (key === PARENT) return parent;
+      if (key === PARENTS) {
+        if (parent) return [parent, ...parent.$parents];
+        return [];
       }
+      // $this means the wrapped target, not current proxy.
+      if (key === THIS) return target;
+      if (Reflect.has(context, key)) return Reflect.get(context, key);
+      if (Reflect.has(target, key)) return Reflect.get(target, key);
+      if (parent) return parent[key];
+    },
+    has(target: any, key: string) {
+      if (key === PARENT) return !!parent;
+      if (key === PARENTS) return true;
+      // $this means the wrapped target, not current proxy.
+      if (key === THIS) return !!target;
+      if (Reflect.has(context, key) || Reflect.has(target, key)) return true;
+      if (parent) return key in parent;
+      return false;
+    },
+    set(target: any, key: string, value: any) {
+      // $parent, $parents and $this is not assignable.
+      // return TypeError in strict mode
+      if (key === PARENT || key === PARENTS || key === THIS) return false;
+      if (Reflect.has(context, key)) return Reflect.set(context, key, value);
+      if (Reflect.has(target, key)) return Reflect.set(target, key, value);
+      if (parent && Reflect.set(parent, key, value)) return true;
+      // If cannot assign to parent chain, create a local variable
+      if (key.startsWith("$")) return Reflect.set(context, key, value);
+      return Reflect.set(target, key, value);
     }
+  };
+}
 
-    // Check parent binding context
-    if (this.$parent) {
-      return this.$parent.get(name);
-    }
-  }
-
-  set(key: string, value: any, operator = AssignmentOperator.Assign): any {
-    if (key.startsWith('$')) {
-      throw new Error(`Cannot assign to the readonly ${key}.`);
-    }
-
-    if (Object.prototype.hasOwnProperty.call(this.$this, key)) {
-      return assign(this.$this, key, value, operator);
-    }
-
-    if (this.$parent) {
-      return this.$parent.set(key, value, operator);
-    } else {
-      throw new Error(`Cannot assign to unknown property "${key}".`);
-    }
-  }
-
-  // TODO support adding contextual variable on the fly
-  // <let :fullname="firstname + ' ' + lastname"></let>
-  // <let fullname.bind="firstname + ' ' + lastname"></let>
-  // <let fullname.one-time="firstname + ' ' + lastname"></let>
-  // Reactive binding should become a getter, the function body is
-  // produced by the parser, bind to current scope.
-  //
-  // addContextVariable(key: string, getterFunc or a value)
+// Proxy can not be extended, so we use a factory method.
+// Scope is a proxy with access to parent Scope through $parent and $parents.
+// There is also contextual variables like $foo and $index.
+// By convention, all contextual variable names start with "$".
+export default function makeScope(
+  target: any,
+  // parent must be a scope made from makeScope.
+  parent: any = undefined,
+  // contextual variables.
+  context: { [key: string]: any } = Object.create(null),
+): any {
+  return new Proxy(target, handler(context, parent));
 }
