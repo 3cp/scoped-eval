@@ -12,6 +12,7 @@ test('Scope has a binding', t => {
   t.is('c' in s, false);
   t.is(s.$parent, undefined);
   t.is('$parent' in s, false);
+  t.is('$this' in s, true);
   t.is(s.$parents.length, 0);
   t.is('$parents' in s, true);
 });
@@ -25,7 +26,9 @@ test('Scope has a binding and parent chain', t => {
   t.is(s.b, false);
   t.is(s.c, 3);
   t.is('c' in s, true);
-
+  t.is(s.$this.a, 1);
+  t.is(s.$this.c, undefined);
+  t.is('$this' in s, true);
   t.is('$parent' in s, true);
   t.is(s.$parent.a, 2);
   t.is('a' in s.$parent, true);
@@ -69,6 +72,18 @@ test('Scope can assign value to binding', t => {
   t.is(s.$foo, 1);
   t.is((object as any).$foo, undefined);
   t.deepEqual(object as any, { a: 2, b: true, c: 1 });
+  t.is(s.$parents.length, 0);
+});
+
+test('Scope can assign value to existing contextual key', t => {
+  const object = { a: 1, b: false };
+  const s = makeScope(object, undefined, {b: true, $bar: 'bar'});
+  t.is(s.b, true);
+  t.is(s.$this.b, false);
+  s.b = 2;
+  t.is(s.b, 2);
+  t.is(s.$this.b, false);
+  t.deepEqual(object as any, { a: 1, b: false });
   t.is(s.$parents.length, 0);
 });
 
