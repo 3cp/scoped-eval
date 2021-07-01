@@ -1,19 +1,24 @@
-import modify from 'modify-code';
+import modify, { ModifyCodeResult } from 'modify-code';
 import * as ESTree from 'estree';
 import { traverse } from 'estraverse';
-import unusedName from './unused-name';
 import parse from './parse';
 import getGlobals from './get-globals';
 
 const DEFAULT_ALLOWED_GLOBALS = {
   'undefined': true,
   'NaN': true,
+  'isNaN': true,
   'Infinity': true,
+  'isFinite': true,
   'alert': true,
   'atob': true,
   'btoa': true,
   'encodeURI': true,
   'encodeURIComponent': true,
+  'decodeURI': true,
+  'decodeURIComponent': true,
+  'parseFloat': true,
+  'parseInt': true,
   'JSON': true,
   'Number': true,
   'String': true,
@@ -27,55 +32,48 @@ const DEFAULT_ALLOWED_GLOBALS = {
   'Object': true,
   'RegExp': true,
   'Set': true,
-  'fetch': true
+  'Intl': true,
+  'fetch': true,
+  'location': true,
+  'setTimeout': true,
+  'clearTimeout': true,
+  'setInterval': true,
+  'clearInterval': true,
+  'setImmediate': true,
+  'clearImmediate': true,
   // 'Selection': true,
   // 'TextDecoder': true,
   // 'TextEncoder': true,
+  // 'Uint8Array': true,
+  // 'Int8Array': true,
+  // 'Uint16Array': true,
+  // 'Int16Array': true,
+  // 'Int32Array': true,
   // 'document': true,
-  // 'location': true,
   // 'history': true,
   // 'crypto': true,
-  // 'setTimeout': true,
-  // 'clearTimeout': true,
-  // 'setInterval': true,
-  // 'clearInterval': true,
-  // 'setImmediate': true,
-  // 'clearImmediate': true,
 };
 
 export default class ScopedEval {
   allowedGlobals: {[key: string]: boolean} = {...DEFAULT_ALLOWED_GLOBALS};
-  cache: {[key: string]: (scope: any) => any} = {};
 
   allowGlobals(globals: string | string[]) {
     if (typeof globals === 'string') {
       globals = [globals];
     }
-    if (globals) {
-      for (const n of globals) {
-        this.allowedGlobals[n] = true;
-      }
+    for (const n of globals) {
+      this.allowedGlobals[n] = true;
     }
   }
 
-  build(code: string): (scope: any) => any {
-    if (typeof this.cache[code] === 'function') {
-      return this.cache[code];
-    }
-
-    const [inputVariable, body] = this.preprocess(code);
-
-    const func = new Function(inputVariable, body) as (scope: any) => any;
-    this.cache[code] = func;
-    return func;
+  build(code: string): () => any {
+    const codeResult = this.preprocess(code);
+    return new Function(codeResult.code) as () => any;
   }
 
-  preprocess(code: string): [string, string] {
+  preprocess(code: string): ModifyCodeResult {
     const ast = parse(code);
     const globals = getGlobals(ast, this.allowedGlobals);
-    // console.log('globals', globals);
-    // console.log('ast', JSON.stringify(ast, null, 2));
-    const scopeVariable = unusedName(ast);
 
     const m = modify(code);
 
@@ -88,50 +86,24 @@ export default class ScopedEval {
       }
     }
 
-    // Rewrite foo += value to scope.set('foo', value, '+=')
+    // Reject dynamic import.
     traverse(ast as ESTree.Node, {
-      enter: function(node: ESTree.Node, parent: ESTree.Node) {
+      enter: function (node: ESTree.Node) {
         if (node.type === 'ImportExpression') {
           throw new Error('Dynamic import is not allowed');
-        }
-        if (
-          parent &&
-          parent.type === 'AssignmentExpression' &&
-          parent.left === node &&
-          node.type === 'Identifier'
-        ) {
-          const {name} = node;
-          const [start, end] = node.range;
-          const ranges = globals[name];
-          // Not a global var
-          if (!ranges) return;
-          const found = ranges.findIndex(r => r[0] === start && r[1] === end);
-          // Still not a global var
-          if (found === -1) return;
-
-          // TODO add an option to reject assignment.
-          // Remove from the global list
-          ranges.splice(found, 1);
-
-          const {right, operator} = parent;
-          m.replace(start, right.range[0], `${scopeVariable}.set('${name}', `);
-          m.insert(right.range[1], `, '${operator}')`);
         }
       }
     });
 
-    // TODO rewrite $parent.$parent.foo.bar to scope.get('$parent').get('$parent').get('foo').bar
-
-    // Replace foo with scope.get('foo')
+    // Replace foo with this.foo
     for (const name in globals) {
       for (const [start, end] of globals[name]) {
-        m.replace(start, end, `${scopeVariable}.get('${name}')`);
+        m.replace(start, end, `this.${name}`);
       }
     }
 
     const result = m.transform();
     // TODO support result.map for debugging
-    return [scopeVariable, result.code];
+    return result;
   }
 }
-
