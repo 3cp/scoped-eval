@@ -89,7 +89,7 @@ test('ScopedEval rejects esm import/exports', t => {
 
 test('ScopedEval preprocesses expression with explicit this', t => {
   const se = new ScopedEval();
-  const code = "a + this.b.c";
+  const code = "return a + this.b.c";
   const result = se.preprocess(code);
   t.is(result.code, "return this.a + this.b.c");
   t.throws(() => se.eval(code, {a: 1}))
