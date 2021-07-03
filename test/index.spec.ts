@@ -62,7 +62,7 @@ test('ScopedEval preprocesses expression with complex assignment', t => {
   t.is(result.code, "return this.a <<= this.a | this.b");
 
   const obj = { a: 2, b: 1 };
-  t.is(se.run(code, obj), 16);
+  t.is(se.eval(code, obj), 16);
   t.deepEqual(obj, { a: 16, b: 1 });
 });
 
@@ -70,7 +70,7 @@ test('ScopedEval builds empty function for empty input', t => {
   const se = new ScopedEval();
   const result = se.preprocess("");
   t.is(result.code, "");
-  t.is(se.run("", {}), undefined);
+  t.is(se.eval("", {}), undefined);
 });
 
 test('ScopedEval rejects esm import/exports', t => {
@@ -81,8 +81,17 @@ test('ScopedEval rejects esm import/exports', t => {
 
   const code2 = "const a = 1; exports default a;";
   t.throws(() => se.build(code2));
-  t.throws(() => se.run(code2, {}));
+  t.throws(() => se.eval(code2, {}));
 
   const code3 = "import('./a')";
   t.throws(() => se.preprocess(code3));
+});
+
+test('ScopedEval preprocesses expression with explicit this', t => {
+  const se = new ScopedEval();
+  const code = "a + this.b.c";
+  const result = se.preprocess(code);
+  t.is(result.code, "return this.a + this.b.c");
+  t.throws(() => se.eval(code, {a: 1}))
+  t.is(se.eval(code, {a: 1, b: {c: 2}}), 3);
 });

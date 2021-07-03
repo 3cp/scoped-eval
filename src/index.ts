@@ -66,7 +66,7 @@ export default class ScopedEval {
     }
   }
 
-  run(code: string, scope: any): any {
+  eval(code: string, scope: any): any {
     return this.build(code).call(scope);
   }
 
