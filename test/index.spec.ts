@@ -1,6 +1,5 @@
 import test from 'ava';
-import ScopedEval from '../src/scoped-eval';
-import makeScope from '../src/scope';
+import ScopedEval from '../src';
 
 test('ScopedEval has allowedGlobals', t => {
   const se = new ScopedEval();
@@ -23,8 +22,6 @@ test('ScopedEval preprocesses expression', t => {
   const func = se.build('foo');
   t.is(func.call({}), undefined);
   t.is(func.call({foo: 'Foo'}), 'Foo');
-  t.is(func.call(makeScope({})), undefined);
-  t.is(func.call(makeScope({}, makeScope({foo: 'Foo'}))), 'Foo');
 });
 
 test('ScopedEval preprocesses expression with allowed globals', t => {
@@ -43,14 +40,8 @@ test('ScopedEval preprocesses expression with assignment', t => {
   t.is(result.code, "return this.a = true");
   const func = se.build(code);
   const obj = {a: false};
-  t.is(func.call(makeScope(obj)), true);
+  t.is(func.call(obj), true);
   t.is(obj.a, true);
-
-  const obj2 = {};
-  const p = {a: false};
-  t.is(func.call(makeScope(obj2, makeScope(p))), true);
-  t.deepEqual(obj2, {});
-  t.is(p.a, true);
 });
 
 test('ScopedEval preprocesses expression with local assignment', t => {
@@ -60,7 +51,7 @@ test('ScopedEval preprocesses expression with local assignment', t => {
   t.is(result.code, "let a = this.b + 1; return this.c + a;");
   const func = se.build(code);
   const obj = {a: 5, b: 1, c: 2};
-  t.is(func.call(makeScope(obj)), 4);
+  t.is(func.call(obj), 4);
   t.deepEqual(obj, {a: 5, b: 1, c: 2});
 });
 
@@ -70,9 +61,8 @@ test('ScopedEval preprocesses expression with complex assignment', t => {
   const result = se.preprocess(code);
   t.is(result.code, "return this.a <<= this.a | this.b");
 
-  const func = se.build(code);
   const obj = { a: 2, b: 1 };
-  t.is(func.call(makeScope(obj)), 16);
+  t.is(se.run(code, obj), 16);
   t.deepEqual(obj, { a: 16, b: 1 });
 });
 
@@ -80,8 +70,7 @@ test('ScopedEval builds empty function for empty input', t => {
   const se = new ScopedEval();
   const result = se.preprocess("");
   t.is(result.code, "");
-  const func = se.build(" ");
-  t.is(func.call({}), undefined);
+  t.is(se.run("", {}), undefined);
 });
 
 test('ScopedEval rejects esm import/exports', t => {
@@ -92,6 +81,7 @@ test('ScopedEval rejects esm import/exports', t => {
 
   const code2 = "const a = 1; exports default a;";
   t.throws(() => se.build(code2));
+  t.throws(() => se.run(code2, {}));
 
   const code3 = "import('./a')";
   t.throws(() => se.preprocess(code3));
