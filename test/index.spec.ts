@@ -63,7 +63,7 @@ test('ScopedEval preprocesses expression with assignment', t => {
   t.is(obj.a, true);
 });
 
-test('ScopedEval preprocesses expression with local assignment', t => {
+test('ScopedEval preprocesses expression with local variable', t => {
   const se = new ScopedEval();
   const code = 'let a = b + 1; return c + a;';
   const result = se.preprocess(code);
@@ -113,4 +113,12 @@ test('ScopedEval preprocesses expression with explicit this', t => {
   t.is(result, "return this.a + this.b.c");
   t.throws(() => se.eval(code, {a: 1}))
   t.is(se.eval(code, {a: 1, b: {c: 2}}), 3);
+});
+
+test('ScopedEval correctly ignores local variable in inner function', t => {
+  const se = new ScopedEval();
+  const code = "list.map(n => n.name).join()";
+  const result = se.preprocess(code);
+  t.is(result, "return this.list.map(n => n.name).join()");
+  t.is(se.eval(code, {list: [{name: "A"}, {name: "B"}]}), "A,B");
 });

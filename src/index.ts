@@ -32,26 +32,7 @@ const DEFAULT_ALLOWED_GLOBALS = {
   'Object': true,
   'RegExp': true,
   'Set': true,
-  'Intl': true,
-  // 'fetch': true,
-  // 'location': true,
-  // 'setTimeout': true,
-  // 'clearTimeout': true,
-  // 'setInterval': true,
-  // 'clearInterval': true,
-  // 'setImmediate': true,
-  // 'clearImmediate': true,
-  // 'Selection': true,
-  // 'TextDecoder': true,
-  // 'TextEncoder': true,
-  // 'Uint8Array': true,
-  // 'Int8Array': true,
-  // 'Uint16Array': true,
-  // 'Int16Array': true,
-  // 'Int32Array': true,
-  // 'document': true,
-  // 'history': true,
-  // 'crypto': true,
+  'Intl': true
 };
 
 export default class ScopedEval {
