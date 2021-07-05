@@ -71,8 +71,7 @@ export default class ScopedEval {
   }
 
   build(code: string): () => any {
-    const processedCode = this.preprocess(code);
-    return new Function(processedCode) as () => any;
+    return new Function(this.preprocess(code)) as () => any;
   }
 
   preprocess(code: string): string {
