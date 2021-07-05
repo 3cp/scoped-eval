@@ -16,7 +16,7 @@
     "version": "standard-changelog && git add CHANGELOG.md",
     "postversion": "git push && git push --tags && npm publish",
     "pretest": "npm run lint",
-    "build": "tsc",
+    "build": "ncc build src/index.ts -m",
     "prebuild": "rimraf dist",
     "prepack": "npm run build"
   },
@@ -40,20 +40,19 @@
     "@types/estraverse": "^5.1.0",
     "@typescript-eslint/eslint-plugin": "^4.28.1",
     "@typescript-eslint/parser": "^4.28.1",
+    "@vercel/ncc": "^0.28.6",
     "ava": "^3.15.0",
     "eslint": "^7.30.0",
+    "eslint-scope": "^5.1.1",
+    "estraverse": "^5.2.0",
+    "meriyah": "^4.1.5",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "standard-changelog": "^2.0.27",
     "ts-node": "^10.0.0",
     "typescript": "^4.3.5"
   },
-  "dependencies": {
-    "eslint-scope": "^5.1.1",
-    "estraverse": "^5.2.0",
-    "meriyah": "^4.1.5",
-    "modify-code": "^1.2.0"
-  },
+  "dependencies": {},
   "ava": {
     "extensions": [
       "ts"

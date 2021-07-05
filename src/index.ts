@@ -1,8 +1,8 @@
-import modify, { ModifyCodeResult } from 'modify-code';
 import * as ESTree from 'estree';
 import { traverse } from 'estraverse';
 import parse from './parse';
 import getGlobals from './get-globals';
+import InsertCode from './insert-code';
 
 const DEFAULT_ALLOWED_GLOBALS = {
   'undefined': true,
@@ -71,15 +71,15 @@ export default class ScopedEval {
   }
 
   build(code: string): () => any {
-    const codeResult = this.preprocess(code);
-    return new Function(codeResult.code) as () => any;
+    const processedCode = this.preprocess(code);
+    return new Function(processedCode) as () => any;
   }
 
-  preprocess(code: string): ModifyCodeResult {
+  preprocess(code: string): string {
     const ast = parse(code);
     const globals = getGlobals(ast, this.allowedGlobals);
 
-    const m = modify(code);
+    const m = new InsertCode(code);
 
     // Make the last expression as the return value;
     const count = ast.body.length;
@@ -101,13 +101,11 @@ export default class ScopedEval {
 
     // Replace foo with this.foo
     for (const name in globals) {
-      for (const [start, end] of globals[name]) {
-        m.replace(start, end, `this.${name}`);
+      for (const [start] of globals[name]) {
+        m.insert(start, 'this.');
       }
     }
 
-    const result = m.transform();
-    // TODO support result.map for debugging
-    return result;
+    return m.transform();
   }
 }
