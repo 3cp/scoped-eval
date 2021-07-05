@@ -19,7 +19,17 @@ test('parse returns AST tree from meriyah', t => {
             "range": [
               0,
               1
-            ]
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 1
+              }
+            }
           },
           "operator": "+=",
           "right": {
@@ -30,21 +40,51 @@ test('parse returns AST tree from meriyah', t => {
             "range": [
               5,
               6
-            ]
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 5
+              },
+              "end": {
+                "line": 1,
+                "column": 6
+              }
+            }
           },
           "start": 0,
           "end": 6,
           "range": [
             0,
             6
-          ]
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 6
+            }
+          }
         },
         "start": 0,
         "end": 6,
         "range": [
           0,
           6
-        ]
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 6
+          }
+        }
       }
     ],
     "start": 0,
@@ -52,7 +92,17 @@ test('parse returns AST tree from meriyah', t => {
     "range": [
       0,
       6
-    ]
+    ],
+    "loc": {
+      "start": {
+        "line": 1,
+        "column": 0
+      },
+      "end": {
+        "line": 1,
+        "column": 6
+      }
+    }
   };
   t.deepEqual(parse(code) as any, expected);
 });
@@ -77,7 +127,17 @@ test('parse returns AST tree without parentheses', t => {
               "range": [
                 2,
                 3
-              ]
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 2
+                },
+                "end": {
+                  "line": 1,
+                  "column": 3
+                }
+              }
             },
             "computed": false,
             "property": {
@@ -88,14 +148,34 @@ test('parse returns AST tree without parentheses', t => {
               "range": [
                 4,
                 5
-              ]
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 4
+                },
+                "end": {
+                  "line": 1,
+                  "column": 5
+                }
+              }
             },
             "start": 2,
             "end": 5,
             "range": [
               2,
               5
-            ]
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 2
+              },
+              "end": {
+                "line": 1,
+                "column": 5
+              }
+            }
           },
           "operator": "=",
           "right": {
@@ -106,21 +186,51 @@ test('parse returns AST tree without parentheses', t => {
             "range": [
               8,
               9
-            ]
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 8
+              },
+              "end": {
+                "line": 1,
+                "column": 9
+              }
+            }
           },
           "start": 0,
           "end": 9,
           "range": [
             0,
             9
-          ]
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 9
+            }
+          }
         },
         "start": 0,
         "end": 9,
         "range": [
           0,
           9
-        ]
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 9
+          }
+        }
       }
     ],
     "start": 0,
@@ -128,7 +238,17 @@ test('parse returns AST tree without parentheses', t => {
     "range": [
       0,
       9
-    ]
+    ],
+    "loc": {
+      "start": {
+        "line": 1,
+        "column": 0
+      },
+      "end": {
+        "line": 1,
+        "column": 9
+      }
+    }
   };
   t.deepEqual(parse(code) as any, expected);
 });
@@ -153,7 +273,17 @@ test('parse supports global return', t => {
               "range": [
                 4,
                 5
-              ]
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 4
+                },
+                "end": {
+                  "line": 1,
+                  "column": 5
+                }
+              }
             },
             "init": {
               "type": "BinaryExpression",
@@ -165,7 +295,17 @@ test('parse supports global return', t => {
                 "range": [
                   8,
                   9
-                ]
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 8
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 9
+                  }
+                }
               },
               "right": {
                 "type": "Literal",
@@ -175,7 +315,17 @@ test('parse supports global return', t => {
                 "range": [
                   12,
                   13
-                ]
+                ],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 12
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 13
+                  }
+                }
               },
               "operator": "+",
               "start": 8,
@@ -183,14 +333,34 @@ test('parse supports global return', t => {
               "range": [
                 8,
                 13
-              ]
+              ],
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 8
+                },
+                "end": {
+                  "line": 1,
+                  "column": 13
+                }
+              }
             },
             "start": 4,
             "end": 13,
             "range": [
               4,
               13
-            ]
+            ],
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 4
+              },
+              "end": {
+                "line": 1,
+                "column": 13
+              }
+            }
           }
         ],
         "start": 0,
@@ -198,7 +368,17 @@ test('parse supports global return', t => {
         "range": [
           0,
           14
-        ]
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 14
+          }
+        }
       },
       {
         "type": "ReturnStatement",
@@ -210,14 +390,34 @@ test('parse supports global return', t => {
           "range": [
             22,
             23
-          ]
+          ],
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 22
+            },
+            "end": {
+              "line": 1,
+              "column": 23
+            }
+          }
         },
         "start": 15,
         "end": 24,
         "range": [
           15,
           24
-        ]
+        ],
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 15
+          },
+          "end": {
+            "line": 1,
+            "column": 24
+          }
+        }
       }
     ],
     "start": 0,
@@ -225,7 +425,17 @@ test('parse supports global return', t => {
     "range": [
       0,
       24
-    ]
+    ],
+    "loc": {
+      "start": {
+        "line": 1,
+        "column": 0
+      },
+      "end": {
+        "line": 1,
+        "column": 24
+      }
+    }
   };
   t.deepEqual(parse(code) as any, expected);
 });

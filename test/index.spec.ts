@@ -24,6 +24,25 @@ test('ScopedEval preprocesses expression', t => {
   t.is(func.call({foo: 'Foo'}), 'Foo');
 });
 
+test('ScopedEval preprocesses expression with explicit return', t => {
+  const se = new ScopedEval();
+  const result = se.preprocess('return foo');
+  t.is(result, "return this.foo");
+  const func = se.build('foo');
+  t.is(func.call({}), undefined);
+  t.is(func.call({ foo: 'Foo' }), 'Foo');
+});
+
+test('ScopedEval preprocesses expression with explicit return, case 2', t => {
+  const se = new ScopedEval();
+  const code = 'if (a) { return foo; } bar;';
+  const result = se.preprocess(code);
+  t.is(result, "if (this.a) { return this.foo; } return this.bar;");
+  const func = se.build(code);
+  t.is(func.call({ foo: 'Foo', bar: 'Bar' }), 'Bar');
+  t.is(func.call({ foo: 'Foo', bar: 'Bar', a: true }), 'Foo');
+});
+
 test('ScopedEval preprocesses expression with allowed globals', t => {
   const se = new ScopedEval();
   const code = 'JSON.stringify(Object.keys(foo))';
