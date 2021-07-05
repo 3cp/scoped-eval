@@ -108,10 +108,13 @@ Size is about 200KB with bundled meriyah + eslint-scope. No runtime dependencies
 
 No transpiling. Expression must use JavaScript syntax supported by all the browsers you want to support.
 
+Can be used with contextual-proxy to deliver interesting dynamic behaviour.
+
 ## Origin of the idea
 
 Vue, Aurelia. Check whether Angular does the same.
-Runtime consideration.
+
+This is a tool good to be standalone. bcx-expression-evaluator is extracted from aurelia-binding, it doesn't support all JS syntax.
 
 Compare vue/au1/au2.
 
