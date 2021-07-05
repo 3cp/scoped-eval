@@ -20,7 +20,7 @@ const result = scopedEval.eval("Math.max(a, b)", {a: 1, b: 2});
 console.log(result); // 2
 ```
 
-`scoped-eval` is designed as a class, so the allowed globals can be customised, with following APIs:
+The API surface is small:
 ```ts
 export default class ScopedEval {
     allowedGlobals: {
@@ -32,6 +32,8 @@ export default class ScopedEval {
     preprocess(code: string): string;
 }
 ```
+
+> It is designed as a class, so the allowed globals can be customised.
 
 The `eval()` method takes two arguments, the first one is the code string to be evaluated, the second one is a scope which can be any kind of object (but not primitive values such as string and number). The code evaluation is sandboxed to only access the scope object, plus a list of allowed globals such as `Math` and `JSON`.
 
@@ -100,11 +102,18 @@ scopedEval.allowGlobals("setTimeout");
 
 ## Support of multiple statements
 
+## Runtime considerations
+
+Size is about 200KB with bundled meriyah + eslint-scope. No runtime dependencies.
+
+No transpiling. Expression must use JavaScript syntax supported by all the browsers you want to support.
+
 ## Origin of the idea
 
 Vue, Aurelia. Check whether Angular does the same.
 Runtime consideration.
 
+Compare vue/au1/au2.
 
 ## License
 MIT.
