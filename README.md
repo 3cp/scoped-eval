@@ -153,6 +153,8 @@ There is no runtime dependencies for `scope-eval`, all required (mainly [meriyah
 
 Note `scope-eval` only rewrites the code to limit global references, it doesn't transpile the code to older version of JavaScript such as ES5. So the code itself needs to only use the supported JavaScript syntax in the browsers (or Nodejs) that you want to support.
 
+Note `scoped-eval` doesn't handle caching of the preprocessed code. If you use `scoped-eval` at runtime, it's recommended to cache the built func against original code string.
+
 `scoped-eval` is also designed along with [contextual-proxy](https://github.com/3cp/contextual-proxy). This two can be used together to deliver interesting dynamic behaviour: eval a code string against a contextual proxy object. For experienced Aurelia users, `scoped-eval` is equivalent to aurelia-binding's parser, `contextual-proxy` is equivalent to aurelia-binding's binding scope.
 
 ## Compare to Angular/Aurelia/Vue's expression parsers
