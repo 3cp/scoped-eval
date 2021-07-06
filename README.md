@@ -87,7 +87,7 @@ That's how the `func.call({a:1, b:2})` works, not very complicated.
 `undefined`, `NaN`, `isNaN`, `Infinity`, `isFinite`, `alert`, `atob`, `btoa`,
 `encodeURI`, `encodeURIComponent`, `decodeURI`, `decodeURIComponent`, `parseFloat`,
 `parseInt`, `JSON`, `Number`, `String`, `Array`, `BigInt`, `Blob`, `Boolean`,
-`Date`, `Map`, `Math`, `Object`, `RegExp`, `Set`, `Intl`
+`Date`, `Map`, `Math`, `Object`, `RegExp`, `Set`, `Intl`.
 
 ## Add allowed globals
 
@@ -95,28 +95,75 @@ If you want to expose more globals:
 ```js
 const scopedEval = new ScopedEval();
 scopedEval.allowGlobals(["clearTimeout", "setTimeout"]);
-// Can use just a string if adding just one global
+// Can use just a string if adding only one global
 scopedEval.allowGlobals("setTimeout");
 // Any followed eval/build/preprocess will respect the added globals.
 ```
 
+## More details on preprocess
+
+Behind the scene, `preprocess` does following:
+1. uses a full JS parser ([meriyah](https://github.com/meriyah/meriyah)) to parse the code into ESTree AST.
+2. does a full variable scope analysis ([eslint-scope](https://github.com/eslint/eslint-scope)) to find out the global references.
+3. rewrite the code string.
+
+The final built func is a native JavaScript function, there is no need of `scoped-eval` package to run the built function. This design means you can use `scoped-eval`'s preprocess as a build tool to compile some expression or template.
+
+This idea is very similar to how Vue2 and Vue3 compiles render template. Vue also rewrites the render template into a function with a list of allowed globals. While Vue2 has different setup between runtime compiler and build-time compiler, Vue3 normalised them into one compiler with an inner implementation of JavaScript expression parser.
+
+`scoped-eval` reuses [meriyah](https://github.com/meriyah/meriyah) and [eslint-scope](https://github.com/eslint/eslint-scope), so the implementation is merely about 150 lines of code.
+
+We think this kind of technique of safe-eval could be a nice standalone tool, hence `scoped-eval` was designed.
+
 ## Support of multiple statements
 
-## Runtime considerations
+Other expression parsers (Angular, Aurelia, Vue) only support one single JavaScript expression, `scoped-eval` supports code (not just expression) with multiple statements.
 
-Size is about 200KB with bundled meriyah + eslint-scope. No runtime dependencies.
+When there is only one statement, and the statement is an expression, `scoped-eval` adds `return`.
+```js
+scopedEval.preprocess("a");
+// "return this.a"
+scopedEval.build("a");
+// function() {return this.a}
+```
 
-No transpiling. Expression must use JavaScript syntax supported by all the browsers you want to support.
+When there are multiple statements, `scoped-eval` adds `return` to the last statement if it's an expression;
+```js
+scopedEval.preprocess("let sum = a + b; `Sum ${sum}`");
+// "let sum = this.a + this.b; return `Sum ${sum}`"
+```
+Note `scoped-eval` didn't rewrite `sum` into `this.sum` in the above example because it's a local variable.
 
-Can be used with contextual-proxy to deliver interesting dynamic behaviour.
+You can also explicitly use `return` statement anywhere you want.
+```js
+scopedEval.preprocess(`if (passed) {
+  return "Good";
+}
+return "bad";
+`);
+// 'if (this.passed) {\n  return "Good";\n}\nreturn "bad";\n'
+```
+Note you can use `if` statement, other expression parsers would not allow that.
 
-## Origin of the idea
+With `scoped-eval`, you can write not just a JavaScript expression, but a full JavaScript function body with multiple statements. You can even define inner function inside the function body.
 
-Vue, Aurelia. Check whether Angular does the same.
+## Runtime consideration
 
-This is a tool good to be standalone. bcx-expression-evaluator is extracted from aurelia-binding, it doesn't support all JS syntax.
+There is no runtime dependencies for `scope-eval`, all required (mainly [meriyah](https://github.com/meriyah/meriyah) and [eslint-scope](https://github.com/eslint/eslint-scope)) are pre-bundled in dist file. The dist file size is about 200KB, not considered small.
 
-Compare vue/au1/au2.
+Note `scope-eval` only rewrites the code to limit global references, it doesn't transpile the code to older version of JavaScript such as ES5. So the code itself needs to only use the supported JavaScript syntax in the browsers (or Nodejs) that you want to support.
+
+`scoped-eval` is also designed along with [contextual-proxy](https://github.com/3cp/contextual-proxy). This two can be used together to deliver interesting dynamic behaviour: eval a code string against a contextual proxy object. For experienced Aurelia users, `scoped-eval` is equivalent to aurelia-binding's parser, `contextual-proxy` is equivalent to aurelia-binding's binding scope.
+
+## Compare to Angular/Aurelia/Vue's expression parsers
+
+`scoped-eval` is closer to Vue's expression parser in terms of technique.
+* Vue3 has an inner implementation of AST to parse JavaScript expression.
+* `scoped-eval` reused [meriyah](https://github.com/meriyah/meriyah) and [eslint-scope](https://github.com/eslint/eslint-scope) to reduce maintenance cost. The full JavaScript parser also enables `scoped-eval` to support multiple statements.
+
+Both Aurelia and Angular's parsers are used both in compile time and runtime. The expression is not executed by JavaScript engine itself, but by the AST tree in their parsers. In short, Aurelia and Angular parsers re-implemented a subset of JavaScript expression syntax, not just parsing, but also executing. That's why not all JavaScript syntax is supported in Aurelia/Angular's expression.
+
+> The above assertion might be wrong for Angular because I didn't use it much.
 
 ## License
 MIT.
