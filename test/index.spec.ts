@@ -122,3 +122,27 @@ test('ScopedEval correctly ignores local variable in inner function', t => {
   t.is(result, "return this.list.map(n => n.name).join()");
   t.is(se.eval(code, {list: [{name: "A"}, {name: "B"}]}), "A,B");
 });
+
+test('ScopeEval supports string interpolation mode', t => {
+  const se = new ScopedEval();
+  const code = "b + c";
+  const result = se.preprocess(code, true);
+  t.is(result, 'return "b + c"');
+  t.is(se.eval(code, {b: 1, c: 2}, true), "b + c");
+});
+
+test('ScopeEval supports string interpolation mode with interpolation', t => {
+  const se = new ScopedEval();
+  const code = "${\"a\"}${a + '}' + `${b + c}`}";
+  const result = se.preprocess(code, true);
+  t.is(result, 'return "" + ("a") + (this.a + \'}\' + `${this.b + this.c}`)');
+  t.is(se.eval(code, {a: 1, b: 2, c: 3 }, true), 'a1}5');
+});
+
+test('ScopeEval supports string interpolation mode with interpolation, case 2', t => {
+  const se = new ScopedEval();
+  const code = "`a`${`b${c}`}`d`";
+  const result = se.preprocess(code, true);
+  t.is(result, 'return "`a`" + (`b${this.c}`) + "`d`"');
+  t.is(se.eval(code, { a: 1, b: 2, c: 3 }, true), '`a`b3`d`');
+});

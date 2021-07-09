@@ -3,6 +3,7 @@ import { traverse } from 'estraverse';
 import parse from './parse';
 import getGlobals from './get-globals';
 import InsertCode from './insert-code';
+import stringInterpolation from './string-interpolation';
 
 const DEFAULT_ALLOWED_GLOBALS = {
   'undefined': true,
@@ -47,15 +48,16 @@ export default class ScopedEval {
     }
   }
 
-  eval(code: string, scope: any): any {
-    return this.build(code).call(scope);
+  eval(code: string, scope: any, stringInterpolationMode = false): any {
+    return this.build(code, stringInterpolationMode).call(scope);
   }
 
-  build(code: string): () => any {
-    return new Function(this.preprocess(code)) as () => any;
+  build(code: string, stringInterpolationMode = false): () => any {
+    return new Function(this.preprocess(code, stringInterpolationMode)) as () => any;
   }
 
-  preprocess(code: string): string {
+  preprocess(code: string, stringInterpolationMode = false): string {
+    code = stringInterpolationMode ? stringInterpolation(code) : code;
     const ast = parse(code);
     const globals = getGlobals(ast, this.allowedGlobals);
 

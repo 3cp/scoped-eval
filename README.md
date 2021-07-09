@@ -23,13 +23,13 @@ console.log(result); // 2
 The API surface is small:
 ```ts
 export default class ScopedEval {
-    allowedGlobals: {
-        [key: string]: boolean;
-    };
-    allowGlobals(globals: string | string[]): void;
-    eval(code: string, scope: any): any;
-    build(code: string): () => any;
-    preprocess(code: string): string;
+  allowedGlobals: {
+    [key: string]: boolean;
+  };
+  allowGlobals(globals: string | string[]): void;
+  eval(code: string, scope: any, stringInterpolationMode?: boolean): any;
+  build(code: string, stringInterpolationMode?: boolean): () => any;
+  preprocess(code: string, stringInterpolationMode?: boolean): string;
 }
 ```
 
@@ -43,12 +43,12 @@ There are two lower level APIs,
 
 The implementation of `eval` and `build` explains better.
 ```ts
-eval(code: string, scope: any): any {
-  return this.build(code).call(scope);
+eval(code: string, scope: any, stringInterpolationMode = false): any {
+  return this.build(code, stringInterpolationMode).call(scope);
 }
 
-build(code: string): () => any {
-  return new Function(this.preprocess(code)) as () => any;
+build(code: string, stringInterpolationMode = false): () => any {
+  return new Function(this.preprocess(code, stringInterpolationMode)) as () => any;
 }
 ```
 
@@ -61,6 +61,37 @@ const result = func.call({a: 1, b: 2});
 > The difference is that the func built from `build()` can be reused to call against various scope objects. While `eval()` is designed to be used only once.
 
 > The `preprocess` API is exposed for tool to pre-compile string expression (or even multiple statements).
+
+## String interpolation mode
+
+`scope-eval` supports string interpolation mode, it treats the code string as if it's wrapped in backticks.
+
+`preprocess`, `build` and `eval` methods all support additional optional parameter to turn on string interpolation mode.
+
+```js
+scopedEval.eval("b + c", {}, true); // literally returns string "b + c"
+scopedEval.eval("`b + c`"); // Same as above
+scopedEval.eval("a is ${a}", {a:1}, true); // "a is 1"
+scopedEval.eval("`a is ${a}`", {a: 1}); // Same as above
+```
+
+Because there is no backtick wrapper, you don't have to escape backtick in the string.
+```js
+scopedEval.eval("`a is ${a}", {a: 1}, true); // "`a is 1"
+// Note has to write \\ for single \ because it's in a JS string "...".
+scopedEval.eval("`\\`a is ${a}`", {a: 1}); // Same as above
+```
+
+If you need to literally write ${ in string. use \${.
+```js
+scopedEval.eval("\\${a}", {a:1}, true); // "${a}"
+```
+
+> Note scoped-eval's string interpolation is not real string interpolation, for simplicity, there is an edge case with different behaviour:
+```js
+scopedEval.eval("\\\\${1}", {}, true); // "\\${1}" ( means \${1} )
+scopedEval.eval("`\\\\${1}`", {}); // "\\1" ( means \1 )
+```
 
 ## How preprocess works
 
