@@ -82,7 +82,7 @@ scopedEval.eval("`a is ${a}", {a: 1}, true); // "`a is 1"
 scopedEval.eval("`\\`a is ${a}`", {a: 1}); // Same as above
 ```
 
-If you need to literally write ${ in string. use \${.
+If you need to literally write `${` in string. use `\${`.
 ```js
 scopedEval.eval("\\${a}", {a:1}, true); // "${a}"
 ```
