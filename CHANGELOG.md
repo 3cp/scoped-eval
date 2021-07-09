@@ -1,3 +1,12 @@
+# [0.2.0](https://github.com/3cp/scoped-eval/compare/v0.1.0...v0.2.0) (2021-07-09)
+
+
+### Features
+
+* support string interpolation mode ([f66e885](https://github.com/3cp/scoped-eval/commit/f66e8851afbbf75d7be009f137c4f0535743d671))
+
+
+
 # 0.1.0 (2021-07-06)
 
 
