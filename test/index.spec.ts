@@ -146,3 +146,12 @@ test('ScopeEval supports string interpolation mode with interpolation, case 2', 
   t.is(result, 'return "`a`" + (`b${this.c}`) + "`d`"');
   t.is(se.eval(code, { a: 1, b: 2, c: 3 }, true), '`a`b3`d`');
 });
+
+test('ScopeEval supports expression using RegExp', t => {
+  const se = new ScopedEval();
+  const code = "/\\d/.test(value)";
+  const result = se.preprocess(code);
+  t.is(result, 'return /\\d/.test(this.value)');
+  t.is(se.eval(code, { value: 'abc' }), false);
+  t.is(se.eval(code, { value: 'ab9c' }), true);
+});
