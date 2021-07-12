@@ -62,3 +62,15 @@ test('getGlobals skips inner function scope', t => {
     ]
   });
 });
+
+test('getGlobals reads deconstruct', t => {
+  const code = `let {a = b, c} = d; a + c`;
+  t.deepEqual(getGlobals(parse(code), {}), {
+    b: [
+      [9, 10]
+    ],
+    d: [
+      [17, 18]
+    ]
+  });
+});
