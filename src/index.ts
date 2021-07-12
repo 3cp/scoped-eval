@@ -57,6 +57,10 @@ export default class ScopedEval {
   }
 
   preprocess(code: string, stringInterpolationMode = false): string {
+    if (typeof code !== 'string') {
+      throw new Error(`Code to be evaluated must be a string, but received ${typeof code}: ${JSON.stringify(code)}`);
+    }
+
     code = stringInterpolationMode ? stringInterpolation(code) : code;
     const ast = parse(code);
     const globals = getGlobals(ast, this.allowedGlobals);

@@ -155,3 +155,10 @@ test('ScopeEval supports expression using RegExp', t => {
   t.is(se.eval(code, { value: 'abc' }), false);
   t.is(se.eval(code, { value: 'ab9c' }), true);
 });
+
+test('ScopeEval rejects non-string code', t => {
+  const se = new ScopedEval();
+  t.throws(() => se.preprocess(null), { message: 'Code to be evaluated must be a string, but received object: null'});
+  t.throws(() => se.preprocess(1 as any), { message: 'Code to be evaluated must be a string, but received number: 1'});
+  t.throws(() => se.preprocess(undefined), { message: 'Code to be evaluated must be a string, but received undefined: undefined'});
+});
