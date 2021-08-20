@@ -9,8 +9,12 @@ export default function (ast: ESTree.Node, allowedGlobals: {[key: string]: boole
   // like __defineSetter__, which makes globals['__defineSetter__'] not empty.
   const globals = Object.create(null);
 
+  const localDefined = new Set(globalScope.set.keys());
+
   globalScope.through.forEach(function (ref: Reference) {
     const name = ref.identifier.name;
+    if (localDefined.has(name)) return;
+
     if (allowedGlobals[name] === true) return;
     // TODO: warn user about usage of not by default allowed global?
     // show user how to allow extra globals.

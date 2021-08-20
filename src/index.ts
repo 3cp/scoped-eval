@@ -4,6 +4,7 @@ import parse from './parse';
 import getGlobals from './get-globals';
 import InsertCode from './insert-code';
 import stringInterpolation from './string-interpolation';
+import unusedName from './unused-name';
 
 const DEFAULT_ALLOWED_GLOBALS = {
   'undefined': true,
@@ -49,20 +50,22 @@ export default class ScopedEval {
   }
 
   eval(code: string, scope: any, stringInterpolationMode = false): any {
-    return this.build(code, stringInterpolationMode).call(scope);
+    return this.build(code, stringInterpolationMode)(scope);
   }
 
-  build(code: string, stringInterpolationMode = false): () => any {
-    return new Function(this.preprocess(code, stringInterpolationMode)) as () => any;
+  build(code: string, stringInterpolationMode = false): (scope: any) => any {
+    return new Function(...this.preprocess(code, stringInterpolationMode)) as (scope: any) => any;
   }
 
-  preprocess(code: string, stringInterpolationMode = false): string {
+  preprocess(code: string, stringInterpolationMode = false): [string, string] {
     if (typeof code !== 'string') {
       throw new Error(`Code to be evaluated must be a string, but received ${typeof code}: ${JSON.stringify(code)}`);
     }
 
     code = stringInterpolationMode ? stringInterpolation(code) : code;
     const ast = parse(code);
+    const scopeVariable = unusedName(ast);
+    const scopePrefix = scopeVariable + '.';
     const globals = getGlobals(ast, this.allowedGlobals);
 
     const m = new InsertCode(code);
@@ -89,10 +92,10 @@ export default class ScopedEval {
     // Replace foo with this.foo
     for (const name in globals) {
       for (const range of globals[name]) {
-        m.insert(range[0], 'this.');
+        m.insert(range[0], scopePrefix);
       }
     }
 
-    return m.transform();
+    return [scopeVariable, m.transform()];
   }
 }
