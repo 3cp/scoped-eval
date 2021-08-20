@@ -1,3 +1,19 @@
+# [0.4.0](https://github.com/3cp/scoped-eval/compare/v0.3.0...v0.4.0) (2021-08-20)
+
+
+### Bug Fixes
+
+* bring back unused-name to properly support function scope ([19d56bd](https://github.com/3cp/scoped-eval/commit/19d56bd3e9e37a7faf5264c2abfdc53c00cdd090))
+
+
+### BREAKING CHANGES
+
+* the built func now has to be called with scope
+object as an argument like func(scope). The scope object is not
+the "this" object in the function.
+
+
+
 # [0.3.0](https://github.com/3cp/scoped-eval/compare/v0.2.2...v0.3.0) (2021-07-24)
 
 
