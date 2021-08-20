@@ -28,8 +28,8 @@ export default class ScopedEval {
   };
   allowGlobals(globals: string | string[]): void;
   eval(code: string, scope: any, stringInterpolationMode?: boolean): any;
-  build(code: string, stringInterpolationMode?: boolean): () => any;
-  preprocess(code: string, stringInterpolationMode?: boolean): string;
+  build(code: string, stringInterpolationMode?: boolean): (scope: any) => any;
+  preprocess(code: string, stringInterpolationMode?: boolean): [string, string];
 }
 ```
 
@@ -44,18 +44,18 @@ There are two lower level APIs,
 The implementation of `eval` and `build` explains better.
 ```ts
 eval(code: string, scope: any, stringInterpolationMode = false): any {
-  return this.build(code, stringInterpolationMode).call(scope);
+  return this.build(code, stringInterpolationMode)(scope);
 }
 
-build(code: string, stringInterpolationMode = false): () => any {
-  return new Function(this.preprocess(code, stringInterpolationMode)) as () => any;
+build(code: string, stringInterpolationMode = false): (scope: any) => any {
+  return new Function(...this.preprocess(code, stringInterpolationMode)) as (scope: any) => any;
 }
 ```
 
 Previous example can be written in two lines with `build()`:
 ```js
 const func = scopedEval.build("Math.max(a, b)");
-const result = func.call({a: 1, b: 2});
+const result = func({a: 1, b: 2});
 ```
 
 > The difference is that the func built from `build()` can be reused to call against various scope objects. While `eval()` is designed to be used only once.
@@ -98,20 +98,22 @@ scopedEval.eval("`\\\\${1}`", {}); // "\\1" ( means \1 )
 Take the previous example expression `"Math.max(a, b)"`.
 1. It detects three global references: `Math`, `a`, and `b`.
 2. It ignores the allowed globals, `Math` in this case.
-3. Then rewrites the rest to `this.a` and `this.b`.
+3. Then rewrites the rest to `c.a` and `c.b`, using `c` as the function argument.
 4. Add a `return ` on the last statement, the only statement in this case.
 ```js
-const processedCode = scopedEval.preprocess("Math.max(a, b)");
+const [scopeVar, processedCode] = scopedEval.preprocess("Math.max(a, b)");
+console.log(scopeVar);
 console.log(processedCode);
-// return Math.max(this.a, this.b)
+// c
+// return Math.max(c.a, c.b)
 ```
 
 So the built function will be:
 ```js
-function() { return Math.max(this.a, this.b) }
+function(c) { return Math.max(c.a, c.b) }
 ```
 
-That's how the `func.call({a:1, b:2})` works, not very complicated.
+That's how the `func({a:1, b:2})` works, not very complicated.
 
 ## Default allowed globals
 
@@ -153,17 +155,17 @@ Other expression parsers (Angular, Aurelia, Vue) only support one single JavaScr
 When there is only one statement, and the statement is an expression, `scoped-eval` adds `return`.
 ```js
 scopedEval.preprocess("a");
-// "return this.a"
+// ["b", "return b.a"]
 scopedEval.build("a");
-// function() {return this.a}
+// function(b) {return b.a}
 ```
 
 When there are multiple statements, `scoped-eval` adds `return` to the last statement if it's an expression;
 ```js
 scopedEval.preprocess("let sum = a + b; `Sum ${sum}`");
-// "let sum = this.a + this.b; return `Sum ${sum}`"
+// ["c", "let sum = c.a + c.b; return `Sum ${sum}`"]
 ```
-Note `scoped-eval` didn't rewrite `sum` into `this.sum` in the above example because it's a local variable.
+Note `scoped-eval` didn't rewrite `sum` into `c.sum` in the above example because it's a local variable.
 
 You can also explicitly use `return` statement anywhere you want.
 ```js
@@ -172,7 +174,7 @@ scopedEval.preprocess(`if (passed) {
 }
 return "bad";
 `);
-// 'if (this.passed) {\n  return "Good";\n}\nreturn "bad";\n'
+// ["a", 'if (a.passed) {\n  return "Good";\n}\nreturn "bad";\n']
 ```
 Note you can use `if` statement, other expression parsers would not allow that.
 
