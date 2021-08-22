@@ -54,11 +54,38 @@ test('getGlobals skips local variables', t => {
   });
 });
 
+test('getGlobals skips local variables defined with const', t => {
+  const code = `const b=a+1;b;`;
+  t.deepEqual(getGlobals(parse(code), {}), {
+    a: [
+      [8, 9]
+    ]
+  });
+});
+
+test('getGlobals skips local variables defined with var', t => {
+  const code = `var b=a+1;b;`;
+  t.deepEqual(getGlobals(parse(code), {}), {
+    a: [
+      [6, 7]
+    ]
+  });
+});
+
 test('getGlobals skips inner function scope', t => {
   const code = `a.map(i => '#'+i).join(',')`;
   t.deepEqual(getGlobals(parse(code), {}), {
     a: [
       [0, 1]
+    ]
+  });
+});
+
+test('getGlobals skips function definition', t => {
+  const code = 'function a() { return b } a()';
+  t.deepEqual(getGlobals(parse(code), {}), {
+    b: [
+      [22, 23]
     ]
   });
 });
