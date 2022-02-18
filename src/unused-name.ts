@@ -1,7 +1,7 @@
 import * as ESTree from 'estree';
 import { traverse } from 'estraverse';
 
-const chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '$', '_'];
+const chars = 'abcdefghijklmnopqrstuvwxyz$_';
 
 export default function(ast: ESTree.Node): string {
   const vars: { [key: string]: boolean } = {};
