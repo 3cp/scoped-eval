@@ -1,6 +1,6 @@
 {
   "name": "scoped-eval",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Safely eval a JavaScript expression within a scope",
   "main": "dist/index.js",
   "files": [
