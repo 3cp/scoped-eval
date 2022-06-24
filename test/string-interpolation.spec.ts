@@ -1,4 +1,4 @@
-import test from 'ava';
+import {test} from 'zora';
 import stringInterpolation from '../src/string-interpolation';
 
 test('stringInterpolation translates single string part', t => {

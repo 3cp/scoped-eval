@@ -1,6 +1,11 @@
-import test from 'ava';
+import {test} from 'zora';
 import parse from '../src/parse';
-import getGlobals from '../src/get-globals';
+import * as ESTree from 'estree';
+import _getGlobals from '../src/get-globals';
+
+function getGlobals(ast: ESTree.Node, allowedGlobals: {[key: string]: boolean}): {[key: string]: [number, number][]} {
+  return Object.assign({}, _getGlobals(ast, allowedGlobals));
+}
 
 test('getGlobals return global variables range', t => {
   t.deepEqual(getGlobals(parse('a'), {}), {

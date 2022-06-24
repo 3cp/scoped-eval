@@ -10,7 +10,7 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "test": "c8 ava",
+    "test": "NODE_OPTIONS='--loader ts-node/esm' c8 pta 'test/**/*.spec.ts'",
     "lint": "eslint src test",
     "preversion": "npm test",
     "version": "standard-changelog && git add CHANGELOG.md",
@@ -41,16 +41,17 @@
     "@typescript-eslint/eslint-plugin": "^5.29.0",
     "@typescript-eslint/parser": "^5.29.0",
     "@vercel/ncc": "^0.34.0",
-    "ava": "^4.3.0",
     "c8": "^7.11.3",
     "eslint": "^8.18.0",
     "eslint-scope": "^7.1.1",
     "estraverse": "^5.3.0",
     "meriyah": "^4.2.1",
+    "pta": "^1.1.0",
     "rimraf": "^3.0.2",
     "standard-changelog": "^2.0.27",
     "ts-node": "^10.8.1",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "zora": "^5.0.3"
   },
   "ava": {
     "extensions": [

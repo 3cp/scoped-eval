@@ -1,4 +1,4 @@
-import test from 'ava';
+import {test} from 'zora';
 import ScopedEval from '../src';
 
 test('ScopedEval has allowedGlobals', t => {
@@ -149,9 +149,24 @@ test('ScopeEval supports expression using RegExp', t => {
 
 test('ScopeEval rejects non-string code', t => {
   const se = new ScopedEval();
-  t.throws(() => se.preprocess(null), { message: 'Code to be evaluated must be a string, but received object: null'});
-  t.throws(() => se.preprocess(1 as any), { message: 'Code to be evaluated must be a string, but received number: 1'});
-  t.throws(() => se.preprocess(undefined), { message: 'Code to be evaluated must be a string, but received undefined: undefined'});
+  try {
+    se.preprocess(null);
+    t.fail('should not pass');
+  } catch (e) {
+    t.is(e.message, 'Code to be evaluated must be a string, but received object: null');
+  }
+  try {
+    se.preprocess(1 as any);
+    t.fail('should not pass');
+  } catch (e) {
+    t.is(e.message, 'Code to be evaluated must be a string, but received number: 1');
+  }
+  try {
+    se.preprocess(undefined);
+    t.fail('should not pass');
+  } catch (e) {
+    t.is(e.message, 'Code to be evaluated must be a string, but received undefined: undefined');
+  }
 });
 
 test('ScopeEval properly handles var definition', t => {

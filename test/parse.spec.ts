@@ -1,4 +1,4 @@
-import test from 'ava';
+import {test} from 'zora';
 import parse from '../src/parse';
 
 test('parse returns AST tree from meriyah', t => {

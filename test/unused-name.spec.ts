@@ -1,4 +1,4 @@
-import test from 'ava';
+import {test} from 'zora';
 import parse from '../src/parse';
 import unusedName from '../src/unused-name';
 
@@ -22,5 +22,10 @@ test('unusedName gave up if user exhausted a to z, $ and _', t => {
     code += String.fromCharCode(n) + ';';
   }
   code += '$;_;';
-  t.throws(() => unusedName(parse(code)), {message: /^I gave up/});
+  try {
+    unusedName(parse(code));
+    t.fail('should not pass');
+  } catch (e) {
+    t.ok(e.message.match(/^I gave up/));
+  }
 });

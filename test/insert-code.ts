@@ -1,4 +1,4 @@
-import test from 'ava';
+import {test} from 'zora';
 import InsertCode from '../src/insert-code';
 
 test('InsertCode inserts', t => {
