@@ -19,7 +19,6 @@ export default function (ast: ESTree.Node, allowedGlobals: {[key: string]: boole
     // TODO: warn user about usage of not by default allowed global?
     // show user how to allow extra globals.
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const range = ref.identifier.range!;
 
     if (globals[name]) {
