@@ -1,3 +1,7 @@
+## [0.4.3](https://github.com/3cp/scoped-eval/compare/v0.4.2...v0.4.3) (2024-12-17)
+
+
+
 ## [0.4.2](https://github.com/3cp/scoped-eval/compare/v0.4.1...v0.4.2) (2022-04-05)
 
 
