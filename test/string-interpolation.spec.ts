@@ -1,31 +1,31 @@
-import {test} from 'zora';
+import { expect, test } from "bun:test";
 import stringInterpolation from '../src/string-interpolation';
 
-test('stringInterpolation translates single string part', t => {
-  t.is(stringInterpolation("a"), '"a"');
-  t.is(stringInterpolation("b + c"), '"b + c"');
-  t.is(stringInterpolation("\"a\""), '"\\"a\\""');
-  t.is(stringInterpolation("`'"), '"`\'"');
-  t.is(stringInterpolation("a\\$b"), '"a\\\\$b"');
+test('stringInterpolation translates single string part', () => {
+  expect(stringInterpolation("a")).toBe('"a"');
+  expect(stringInterpolation("b + c")).toBe('"b + c"');
+  expect(stringInterpolation("\"a\"")).toBe('"\\"a\\""');
+  expect(stringInterpolation("`'")).toBe('"`\'"');
+  expect(stringInterpolation("a\\$b")).toBe('"a\\\\$b"');
   // \${ means ${
-  t.is(stringInterpolation("\\${a"), '"${a"');
-  t.is(stringInterpolation("b\\${a"), '"b${a"');
-  t.is(stringInterpolation("b\\${"), '"b${"');
+  expect(stringInterpolation("\\${a")).toBe('"${a"');
+  expect(stringInterpolation("b\\${a")).toBe('"b${a"');
+  expect(stringInterpolation("b\\${")).toBe('"b${"');
   // Edge case: \\${ becomes \${,
   // In real string interpolation, \\${ means single \
   // followed by opening interpolation
-  t.is(stringInterpolation("b\\\\${a"), '"b\\\\${a"');
+  expect(stringInterpolation("b\\\\${a")).toBe('"b\\\\${a"');
 });
 
-test('stringInterpolation translates interpolation', t => {
-  t.is(stringInterpolation("${a}"), '"" + (a)');
-  t.is(stringInterpolation("a ${b + c}"), '"a " + (b + c)');
-  t.is(stringInterpolation("${\"a\"}${a + '}' + `${b + c}`}"), '"" + ("a") + (a + \'}\' + `${b + c}`)');
-  t.is(stringInterpolation("`a`${`b${c}`}`d`"), '"`a`" + (`b${c}`) + "`d`"');
+test('stringInterpolation translates interpolation', () => {
+  expect(stringInterpolation("${a}")).toBe('"" + (a)');
+  expect(stringInterpolation("a ${b + c}")).toBe('"a " + (b + c)');
+  expect(stringInterpolation("${\"a\"}${a + '}' + `${b + c}`}")).toBe('"" + ("a") + (a + \'}\' + `${b + c}`)');
+  expect(stringInterpolation("`a`${`b${c}`}`d`")).toBe('"`a`" + (`b${c}`) + "`d`"');
 });
 
-test('stringInterpolation rejects malformed interpolation', t => {
-  t.throws(() => stringInterpolation("${"));
-  t.throws(() => stringInterpolation("${}"));
-  t.throws(() => stringInterpolation("a ${b + '}'"));
+test('stringInterpolation rejects malformed interpolation', () => {
+  expect(() => stringInterpolation("${")).toThrow();
+  expect(() => stringInterpolation("${}")).toThrow();
+  expect(() => stringInterpolation("a ${b + '}'")).toThrow();
 });

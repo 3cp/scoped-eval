@@ -1,7 +1,7 @@
-import {test} from 'zora';
+import { expect, test } from "bun:test";
 import parse from '../src/parse';
 
-test('parse returns AST tree from meriyah', t => {
+test('parse returns AST tree from meriyah', () => {
   const code = 'a += 1';
   const expected = {
     "type": "Program",
@@ -104,10 +104,10 @@ test('parse returns AST tree from meriyah', t => {
       }
     }
   };
-  t.deepEqual(parse(code) as any, expected);
+  expect(parse(code) as any).toEqual(expected);
 });
 
-test('parse returns AST tree without parentheses', t => {
+test('parse returns AST tree without parentheses', () => {
   const code = '((b.c))=a';
   const expected = {
     "type": "Program",
@@ -250,10 +250,10 @@ test('parse returns AST tree without parentheses', t => {
       }
     }
   };
-  t.deepEqual(parse(code) as any, expected);
+  expect(parse(code) as any).toEqual(expected);
 });
 
-test('parse supports global return', t => {
+test('parse supports global return', () => {
   const code = 'let b = a + 1; return b;';
   const expected = {
     "type": "Program",
@@ -437,5 +437,5 @@ test('parse supports global return', t => {
       }
     }
   };
-  t.deepEqual(parse(code) as any, expected);
+  expect(parse(code) as any).toEqual(expected);
 });

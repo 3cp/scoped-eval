@@ -51,7 +51,7 @@ function split(code: string): Part[] {
         // Reject non-expression
         throw new Error("not a valid expression: " + interpolation);
       }
-    } catch (e) {
+    } catch {
       // Try next "}"
       continue;
     }

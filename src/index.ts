@@ -83,7 +83,6 @@ export default class ScopedEval {
     traverse(ast as ESTree.Node, {
       enter: function (node: ESTree.Node) {
         if (node.type === 'ImportExpression') {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           throw new Error(`[${node.loc!.start.line}:${node.loc!.start.column}]: Dynamic import is not allowed`);
         }
       }
